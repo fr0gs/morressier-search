@@ -30,10 +30,6 @@ const SearchBar: React.FC<Props> = ({ search, inNavBar = false }) => {
     setSearchValue(e.target.value);
   }
 
-  const resetInputField = () => {
-    setSearchValue("")
-  }
-
   const handleKeyPress = (evt: any) => {
     if (evt.key === 'Enter') {
       callSearchFunction(evt);
@@ -43,7 +39,6 @@ const SearchBar: React.FC<Props> = ({ search, inNavBar = false }) => {
   const callSearchFunction = (e: any) => {
     e.preventDefault();
     search(searchValue);
-    resetInputField();
   }
 
 return (

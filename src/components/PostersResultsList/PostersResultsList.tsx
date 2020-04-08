@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import styles from './PostersResultsList.module.css';
-import { useLocation, useHistory } from 'react-router-dom';
-import axios, { AxiosResponse } from 'axios';
-import { SearchResultsResponseData, MorressierPoster } from '../../interfaces/app';
+import React, {  } from 'react';
+import { MorressierPoster } from '../../interfaces/app';
 import { 
   Container, 
   Grid, 
@@ -13,15 +10,12 @@ import {
   Typography, 
   CardActions, 
   Button, 
-  CircularProgress
 } from '@material-ui/core';
 
 
 interface Props {
   posters: MorressierPoster[]
 }
-
-const POSTERS_API_URL = "/events_manager/v3/posters/search";
 
 const useStyles = makeStyles((theme) => ({
   root: {
