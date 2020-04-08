@@ -7,6 +7,7 @@ export type Collection = {
 
 export type MorressierPoster = {
     authors: string[], // array of MorressierUser ids
+    author_names: string[],
     event: string, // MorressierEvent id
     id: string,
     keywords?: string[],

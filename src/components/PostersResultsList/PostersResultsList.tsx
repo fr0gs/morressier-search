@@ -1,5 +1,5 @@
 import React, {  } from 'react';
-import { MorressierPoster } from '../../interfaces/app';
+import { MorressierPoster, MorressierEvent } from '../../interfaces/app';
 import { 
   Container, 
   Grid, 
@@ -14,7 +14,8 @@ import {
 
 
 interface Props {
-  posters: MorressierPoster[]
+  posters: MorressierPoster[];
+  events: MorressierEvent[];
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -31,6 +32,9 @@ const useStyles = makeStyles((theme) => ({
   },
   icon: {
     marginRight: theme.spacing(2),
+  },
+  info: {
+
   },
   heroContent: {
     backgroundColor: theme.palette.background.paper,
@@ -63,8 +67,13 @@ const useStyles = makeStyles((theme) => ({
 /**
  * List of Posters painted in a Grid layout.
  */
-const PostersResultsList: React.FC<Props> = ({ posters }) => {
+const PostersResultsList: React.FC<Props> = ({ posters, events }) => {
   const classes = useStyles();
+
+  console.log(posters);
+  console.log(events);
+
+  const findEventName = (eventId: string) => events.find(ev => ev.id === eventId)?.name || 'No event associated';
 
   return (
     <Container className={classes.heroContent} maxWidth="md">
@@ -82,8 +91,10 @@ const PostersResultsList: React.FC<Props> = ({ posters }) => {
                   <Typography gutterBottom variant="h5" component="h2">
                     {poster.title}
                   </Typography>
-                  <Typography>
-                    This is a media card. You can use this section to describe the content.
+                  <Typography component={'span'}>
+                    <p><strong>author:</strong> {poster.author_names.join(' ')}</p>
+                    <p><strong>keywords:</strong> {poster.keywords?.join(', ')}</p>
+                    <p><strong>event name:</strong> {findEventName(poster.event) }</p>
                   </Typography>
                 </CardContent>
                 <CardActions>
@@ -91,7 +102,7 @@ const PostersResultsList: React.FC<Props> = ({ posters }) => {
                     View
                   </Button>
                 </CardActions>
-              </Card>               
+              </Card>
             </Grid>
           )
         })}

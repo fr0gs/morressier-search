@@ -51,7 +51,7 @@ return (
       onChange={handleSearchInputChanges}
       inputProps={{ 
         'aria-label' : 'search',
-        ...inNavBar && { className: classes.inputInput }
+        ...inNavBar && { className: classes.inputInput } //This is just some fun, conditionally extend a key to the object if inNavBar is true
       }}
     />
   </form>

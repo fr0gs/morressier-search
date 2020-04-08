@@ -9,7 +9,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import SearchBar from '../SearchBar/SearchBar';
 import { makeStyles, fade, CircularProgress } from '@material-ui/core';
 import axios, { AxiosResponse } from 'axios';
-import { MorressierPoster, SearchResultsResponseData } from '../../interfaces/app';
+import { MorressierPoster, MorressierEvent, SearchResultsResponseData } from '../../interfaces/app';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -87,6 +87,7 @@ const PostersResultsPage: React.FC = () => {
 
   let [isLoading, setIsLoading] = useState(true);
   let [posters, setPosters] = useState<MorressierPoster[]>([]);
+  let [events, setEvents] = useState<MorressierEvent[]>([]);
 
   const query = queryParams.get('query');
   const offset = queryParams.get('offset') || 0;
@@ -108,6 +109,7 @@ const PostersResultsPage: React.FC = () => {
       .then((response: AxiosResponse<SearchResultsResponseData>) => {
         setIsLoading(false);
         setPosters(response.data.posters);
+        setEvents(response.data.events);
       })
   }, [query, offset, limit, history]);
 
@@ -133,7 +135,7 @@ const PostersResultsPage: React.FC = () => {
         <Route exact path={path}>
           {isLoading ? (
             <CircularProgress />
-          ) : (<PostersResultsList posters={posters}/>)} 
+          ) : (<PostersResultsList posters={posters} events={events} />)} 
         </Route>
         <Route path={`${path}/:posterId`}>
           <PostersResultsDetail />
