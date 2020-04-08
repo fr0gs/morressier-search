@@ -89,7 +89,7 @@ const PostersResultsPage: React.FC = () => {
   let [posters, setPosters] = useState<MorressierPoster[]>([]);
   let [events, setEvents] = useState<MorressierEvent[]>([]);
 
-  const query = queryParams.get('query');
+  const query = queryParams.get('query') || "";
   const offset = queryParams.get('offset') || 0;
   const limit = queryParams.get('limit') || 10;
 
@@ -126,7 +126,7 @@ const PostersResultsPage: React.FC = () => {
             <div className={classes.searchIcon}>
               <SearchIcon />
             </div>
-            <SearchBar search={handleSearch} inNavBar={true} />
+            <SearchBar search={handleSearch} inNavBar={true} query={query} />
           </div>
         </Toolbar>
       </AppBar>
