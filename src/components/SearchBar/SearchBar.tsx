@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, makeStyles } from '@material-ui/core';
 
 interface Props {
@@ -26,6 +26,8 @@ const useStyles = makeStyles((theme) => ({
 const SearchBar: React.FC<Props> = ({ search, inNavBar = false, query = "" }) => {
   const classes = useStyles();
   const [searchValue, setSearchValue] = useState(query);
+
+  useEffect(() => setSearchValue(query), [query]);
   
   const handleSearchInputChanges = (e: any) => {
     setSearchValue(e.target.value);

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Switch, Route, useRouteMatch, Link, useHistory, useLocation } from 'react-router-dom';
+import React, { useState, Fragment } from 'react';
+import { Switch, Route, useRouteMatch, Link, useHistory } from 'react-router-dom';
 import PostersResultsList from '../PostersResultsList/PostersResultsList';
 import PostersResultsDetail from '../PostersResultsDetail/PostersResultsDetail';
 import AppBar from '@material-ui/core/AppBar';
@@ -14,13 +14,19 @@ import {
   MorressierPoster, 
   MorressierEvent, 
   SearchResultsResponseData, 
-  SinglePosterResponseData 
+  SinglePosterResponseData, 
+  NumericalQueryParam
 } from '../../interfaces/app';
+import CenteredComponent from '../CenteredComponent/CenteredComponent';
 
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6),
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -77,72 +83,76 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-//Hook to parse the query string.
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
 
 const POSTERS_API_URL = "/events_manager/v3/posters/search";
 const POSTERS_API_DETAIL_URL = "/events_manager/v2/posters";
+const POSTERS_PER_PAGE = 6;
 
 
 const PostersResultsPage: React.FC = () => {
   let { path } = useRouteMatch();
-  let queryParams = useQuery();
   let classes = useStyles();
   let history = useHistory();
 
-  let [isLoading, setIsLoading] = useState(true);
+  let [query, setQuery] = useState("");
+  let [isLoading, setIsLoading] = useState(false);
   let [posters, setPosters] = useState<MorressierPoster[]>([]);
   let [events, setEvents] = useState<MorressierEvent[]>([]);
-  let [selectedPoster, setSelectedPoster] = useState<MorressierPoster>();
+  let [selectedPosterInfo, setSelectedPosterInfo] = useState<SinglePosterResponseData>();
 
-  const query = queryParams.get('query') || "";
-  const offset = queryParams.get('offset') || 0;
-  const limit = queryParams.get('limit') || 6;
-
+  /**
+   * 
+   * @param searchTerm the serach term
+   */
   const handleSearch = (searchTerm: string) => {
-    history.push(`/posters?query=${searchTerm}&offset=${offset}&limit=${limit}`);  
+    history.push(`/posters?query=${searchTerm}&offset=${0}&limit=${POSTERS_PER_PAGE}`);
   }
 
   /**
-   * Set the clicked poster to current one and navigate to detail page.
-   * @param posterId The poster Id
+   * Fetch the (incomplete) data for all the Posters, Events & Users
    */
-  const handleGoToDetail = (posterId: string) => {
-    setIsLoading(true);
-
-    axios.get(`${POSTERS_API_DETAIL_URL}/${posterId}`)
-      .then((response: AxiosResponse<SinglePosterResponseData>) => {
-        setIsLoading(false);
-        setSelectedPoster(response.data.poster);
-        history.push(`/posters/${posterId}`);
-      }).catch(error => {
-        setIsLoading(false)
-        alert('Something went terribly wrong');
-      })
-  }
-
-  useEffect(() => {
-    //Redirect to welcome page if we don't even provide a query term.
-    if (!query && !selectedPoster) {
-      history.push('/welcome');
-    }
-
-    if (query) {
+  const fetchPosters = (query: string, offset: NumericalQueryParam, limit: NumericalQueryParam) => {
+    return new Promise((resolve, reject) => {
+      setQuery(query);
       setIsLoading(true);
-    
       axios.get(`${POSTERS_API_URL}?query=${query}&offset=${offset}&limit=${limit}`)
         .then((response: AxiosResponse<SearchResultsResponseData>) => {
           setIsLoading(false);
           setPosters(response.data.posters);
           setEvents(response.data.events);
+          resolve(`axios -- fetchPosters succeeded with params: ${query} ${offset} ${limit}`);
+        }).catch(() => reject(`axios -- fetchPosters failed with params: ${query} ${offset} ${limit}`))
+    })
+  }
+
+  /**
+   * Set the clicked poster to current one and navigate to detail page.
+   * @param posterId the poster id
+   */
+  const handleGoToDetail = (posterId: NumericalQueryParam) => {
+    history.push(`/posters/${posterId}`);
+  }
+
+  /**
+   * Fetch the data for a given Poster.
+   * @param posterId poster id
+   */
+  const fetchPosterDetail = (posterId: NumericalQueryParam) => {
+    return new Promise((resolve, reject) => {
+      setIsLoading(true);
+      axios.get(`${POSTERS_API_DETAIL_URL}/${posterId}`)
+        .then((response: AxiosResponse<SinglePosterResponseData>) => {
+          setSelectedPosterInfo(response.data);
+          setIsLoading(false);
+          resolve();
+        }).catch(() => {
+          reject('Something went terribly wrong');
         })
-    }
-  }, [query, offset, limit]);
+    })    
+  }
 
   return (
-    <div className={classes.root} data-testid="PostersResultsPage">
+    <Fragment>
       <AppBar position="static">
         <Toolbar>
           <Typography className={classes.title} variant="h6" noWrap>
@@ -161,15 +171,23 @@ const PostersResultsPage: React.FC = () => {
 
       <Switch>
         <Route path={`${path}/:posterId`}>
-          <PostersResultsDetail poster={selectedPoster}/>
+          {isLoading ? (
+            <CenteredComponent>
+              <CircularProgress />
+            </CenteredComponent>
+          ) : (
+            <PostersResultsDetail handleFetchPosterDetail={fetchPosterDetail} posterInfo={selectedPosterInfo}/>
+          )}
         </Route>
         <Route exact path={path}>
-          {isLoading ? (
-            <CircularProgress />
-          ) : (<PostersResultsList posters={posters} events={events} handleGoToDetail={handleGoToDetail}/>)} 
+          <PostersResultsList 
+            posters={posters} 
+            events={events} 
+            handleGoToDetail={handleGoToDetail}
+            handleFetchPosters={fetchPosters} /> 
         </Route>
       </Switch>
-    </div>
+    </Fragment>
   );
 }
 

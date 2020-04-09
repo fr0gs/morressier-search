@@ -5,6 +5,10 @@ export type Collection = {
     items: string[] // array of poster ids
 };
 
+type Nullable<T> = T | null | undefined;
+type StringOrNumber = string | number;
+export type NumericalQueryParam = Nullable<StringOrNumber>;
+
 export type MorressierPoster = {
     authors: string[], // array of MorressierUser ids
     author_names: string[],
@@ -41,17 +45,17 @@ export type MorressierEvent = {
     short_name: string,
     start_date: string,
     venue: string
-}
+};
 
 export type SearchResultsResponseData = {
     collection: Collection,
     events: MorressierEvent[],
     posters: MorressierPoster[],
     users: MorressierUser[]
-}
+};
 
 export type SinglePosterResponseData = {
     poster: MorressierPoster,
     event: MorressierEvent,
     users: MorressierUser[]
-}
+};
