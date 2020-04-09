@@ -17,8 +17,11 @@ import CenteredComponent from '../CenteredComponent/CenteredComponent';
 
 
 interface Props {
+  posterCount: number;
   posters: MorressierPoster[];
   events: MorressierEvent[];
+  handleNext: Function;
+  handlePrevious: Function;
   handleGoToDetail: Function;
   handleFetchPosters: (query: string, offset: NumericalQueryParam, limit: NumericalQueryParam) => Promise<any>;
 }
@@ -75,22 +78,41 @@ function useQuery() {
 /**
  * List of Posters painted in a Grid layout.
  */
-const PostersResultsList: React.FC<Props> = ({ posters, events, handleGoToDetail, handleFetchPosters }) => {
+const PostersResultsList: React.FC<Props> = ({
+  posterCount,
+  posters, 
+  events, 
+  handleGoToDetail, 
+  handleFetchPosters, 
+  handleNext,
+  handlePrevious 
+}) => {
   const classes = useStyles();
   let queryParams = useQuery();
-
-  //isLoading is here and not in PostersResultsPage like the one for PostersResultsDetail
-  //because if the loading logic is on the outer component, it will chec
   let [isLoading, setIsLoading] = useState(false);
 
   const query = queryParams.get('query') || "";
   const offset = queryParams.get('offset') || 0;
   const limit = queryParams.get('limit') || 6;
 
+  //Check the name of the event of a poster in the events array
   const findEventName = (eventId: string) => events.find(ev => ev.id === eventId)?.name || 'No event associated';
+
   const goToDetail = (posterId: string, eventName: string) => {
     handleGoToDetail(posterId, eventName);
   };
+
+  const isDisabledNext = () => {
+    const numberTotal = posterCount as number;
+    const numberLimit = limit as number;
+    const numberOffset = offset as number;
+    return (numberTotal - numberOffset) / numberLimit < 1;
+  }
+
+  const isDisabledPrevious = () => {
+    const numberOffset = +offset;
+    return numberOffset === 0;
+  }
 
   useEffect(() => {
     setIsLoading(true)
@@ -135,14 +157,26 @@ const PostersResultsList: React.FC<Props> = ({ posters, events, handleGoToDetail
               </Grid>
             )
           })}
+        <CenteredComponent>
         <footer className={classes.footer}>
           <Typography variant="h6" align="center" gutterBottom>
-            Footer
+            <Button
+                disabled={isDisabledPrevious()}
+                variant="outlined" 
+                color="primary"
+                onClick={() => handlePrevious(offset, limit)}>
+              Previous
+            </Button>
+            <Button 
+                disabled={isDisabledNext()}
+                variant="outlined" 
+                color="primary" 
+                onClick={() => handleNext(offset, limit)}>
+              Next
+            </Button>
           </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-            Something here to give the footer a purpose!
-          </Typography>
-        </footer>
+        </footer>          
+        </CenteredComponent>
         </Grid>
       </Container>        
       )}      

@@ -15,22 +15,13 @@ import {
   MorressierEvent, 
   SearchResultsResponseData, 
   SinglePosterResponseData, 
-  NumericalQueryParam
+  NumericalQueryParam,
+  StringOrNumber
 } from '../../interfaces/app';
 import CenteredComponent from '../CenteredComponent/CenteredComponent';
 
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6),
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
   title: {
     flexGrow: 1,
     display: 'none',
@@ -65,22 +56,6 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inputRoot: {
-    color: 'inherit',
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      width: '12ch',
-      '&:focus': {
-        width: '20ch',
-      },
-    },
-  },
 }));
 
 
@@ -95,6 +70,7 @@ const PostersResultsPage: React.FC = () => {
   let history = useHistory();
 
   let [query, setQuery] = useState("");
+  let [posterCount, setPosterCount] = useState(0);
   let [isLoading, setIsLoading] = useState(false);
   let [posters, setPosters] = useState<MorressierPoster[]>([]);
   let [events, setEvents] = useState<MorressierEvent[]>([]);
@@ -119,6 +95,7 @@ const PostersResultsPage: React.FC = () => {
         .then((response: AxiosResponse<SearchResultsResponseData>) => {
           setIsLoading(false);
           setPosters(response.data.posters);
+          setPosterCount(response.data.collection.total);
           setEvents(response.data.events);
           resolve(`axios -- fetchPosters succeeded with params: ${query} ${offset} ${limit}`);
         }).catch(() => reject(`axios -- fetchPosters failed with params: ${query} ${offset} ${limit}`))
@@ -151,6 +128,31 @@ const PostersResultsPage: React.FC = () => {
     })    
   }
 
+  /**
+   * Calls the next page of posters.
+   * 
+   * I did this "toy" way of type assert the offset & limit to be a string
+   * because I know they are coming as a string in this case.
+   * 
+   * @param offset the number of items you want to leap over before fetching
+   * @param limit the page size
+   */
+  const handleNext = (offset: StringOrNumber, limit: StringOrNumber) => {
+    const numberOffset = +offset;
+    const numberLimit = +limit
+    history.push(`/posters?query=${query}&offset=${numberOffset+numberLimit}&limit=${limit}`);
+  }
+
+  /**
+   * Calls the previous page of posters.
+   * @param offset the number of items you want to leap over before fetching
+   */
+  const handlePrevious = (offset: StringOrNumber, limit: StringOrNumber) => {
+    const numberOffset = +offset;
+    const numberLimit = +limit;
+    history.push(`/posters?query=${query}&offset=${numberOffset-numberLimit}&limit=${limit}`);   
+  }
+
   return (
     <Fragment>
       <AppBar position="static">
@@ -180,9 +182,12 @@ const PostersResultsPage: React.FC = () => {
           )}
         </Route>
         <Route exact path={path}>
-          <PostersResultsList 
+          <PostersResultsList
+            posterCount={posterCount}
             posters={posters} 
             events={events} 
+            handleNext={handleNext}
+            handlePrevious={handlePrevious}
             handleGoToDetail={handleGoToDetail}
             handleFetchPosters={fetchPosters} /> 
         </Route>

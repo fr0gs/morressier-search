@@ -6,7 +6,7 @@ export type Collection = {
 };
 
 type Nullable<T> = T | null | undefined;
-type StringOrNumber = string | number;
+export type StringOrNumber = string | number;
 export type NumericalQueryParam = Nullable<StringOrNumber>;
 
 export type MorressierPoster = {
