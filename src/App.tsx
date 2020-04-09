@@ -19,6 +19,7 @@ function App() {
         <Route path="/posters">
           <PostersResultsPage />
         </Route>
+        <Redirect from='/' to='/welcome'/>
       </Switch>
     </Router>
   );

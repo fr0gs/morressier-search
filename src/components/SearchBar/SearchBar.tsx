@@ -46,7 +46,8 @@ return (
   <form className="search">
     <TextField
       id="searchbar" 
-      color="primary" 
+      color="primary"
+      fullWidth={!inNavBar}
       value={searchValue}
       onKeyPress={handleKeyPress}
       onChange={handleSearchInputChanges}

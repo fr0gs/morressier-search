@@ -16,6 +16,7 @@ import {
 interface Props {
   posters: MorressierPoster[];
   events: MorressierEvent[];
+  handleGoToDetail: Function;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -67,13 +68,14 @@ const useStyles = makeStyles((theme) => ({
 /**
  * List of Posters painted in a Grid layout.
  */
-const PostersResultsList: React.FC<Props> = ({ posters, events }) => {
+const PostersResultsList: React.FC<Props> = ({ posters, events, handleGoToDetail }) => {
   const classes = useStyles();
 
-  console.log(posters);
-  console.log(events);
-
   const findEventName = (eventId: string) => events.find(ev => ev.id === eventId)?.name || 'No event associated';
+  const goToDetail = (e: any, posterId: string) => {
+    e.preventDefault();
+    handleGoToDetail(posterId)
+  };
 
   return (
     <Container className={classes.heroContent} maxWidth="md">
@@ -98,7 +100,7 @@ const PostersResultsList: React.FC<Props> = ({ posters, events }) => {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small" color="primary">
+                  <Button size="small" color="primary" onClick={(e) => goToDetail(e, poster.id)}>
                     View
                   </Button>
                 </CardActions>
