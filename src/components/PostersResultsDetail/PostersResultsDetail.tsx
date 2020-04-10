@@ -1,5 +1,5 @@
 import React, { useEffect, Fragment, useState } from 'react';
-import { SinglePosterResponseData, NumericalQueryParam } from '../../interfaces/app';
+import { SinglePosterResponseData } from '../../interfaces/app';
 import CenteredComponent from '../CenteredComponent/CenteredComponent';
 import { CardContent, Card, CardMedia, Typography, makeStyles, CircularProgress } from '@material-ui/core';
 import { useParams } from 'react-router-dom';

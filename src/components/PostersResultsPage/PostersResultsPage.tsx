@@ -7,7 +7,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import SearchIcon from '@material-ui/icons/Search';
 import SearchBar from '../SearchBar/SearchBar';
-import { makeStyles, fade, CircularProgress } from '@material-ui/core';
+import { makeStyles, fade } from '@material-ui/core';
 import { AxiosResponse } from 'axios';
 import { axiosCache as axios } from '../../util/axiosCache';
 
@@ -19,7 +19,6 @@ import {
   NumericalQueryParam,
   StringOrNumber
 } from '../../interfaces/app';
-import CenteredComponent from '../CenteredComponent/CenteredComponent';
 
 
 const useStyles = makeStyles((theme) => ({
