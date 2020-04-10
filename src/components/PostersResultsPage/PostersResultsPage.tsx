@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from 'react';
-import { Switch, Route, useRouteMatch, Link, useHistory } from 'react-router-dom';
+import { Switch, Route, useRouteMatch, Link, useHistory, useLocation } from 'react-router-dom';
 import PostersResultsList from '../PostersResultsList/PostersResultsList';
 import PostersResultsDetail from '../PostersResultsDetail/PostersResultsDetail';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,6 +10,7 @@ import SearchBar from '../SearchBar/SearchBar';
 import { makeStyles, fade, CircularProgress } from '@material-ui/core';
 import { AxiosResponse } from 'axios';
 import { axiosCache as axios } from '../../util/axiosCache';
+
 import { 
   MorressierPoster, 
   MorressierEvent, 
@@ -59,6 +60,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
+//Hook to parse the query string.
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 const POSTERS_API_URL = "/events_manager/v3/posters/search";
 const POSTERS_API_DETAIL_URL = "/events_manager/v2/posters";
 const POSTERS_PER_PAGE = 6;
@@ -68,10 +74,11 @@ const PostersResultsPage: React.FC = () => {
   let { path } = useRouteMatch();
   let classes = useStyles();
   let history = useHistory();
+  let queryParams = useQuery();
 
-  let [query, setQuery] = useState("");
+  const query = queryParams.get('query') || "";
+
   let [posterCount, setPosterCount] = useState(0);
-  let [isLoading, setIsLoading] = useState(false);
   let [posters, setPosters] = useState<MorressierPoster[]>([]);
   let [events, setEvents] = useState<MorressierEvent[]>([]);
   let [selectedPosterInfo, setSelectedPosterInfo] = useState<SinglePosterResponseData>();
@@ -89,11 +96,8 @@ const PostersResultsPage: React.FC = () => {
    */
   const fetchPosters = (query: string, offset: NumericalQueryParam, limit: NumericalQueryParam) => {
     return new Promise((resolve, reject) => {
-      setQuery(query);
-      setIsLoading(true);
       axios.get(`${POSTERS_API_URL}?query=${query}&offset=${offset}&limit=${limit}`)
         .then((response: AxiosResponse<SearchResultsResponseData>) => {
-          setIsLoading(false);
           setPosters(response.data.posters);
           setPosterCount(response.data.collection.total);
           setEvents(response.data.events);
@@ -107,7 +111,7 @@ const PostersResultsPage: React.FC = () => {
    * @param posterId the poster id
    */
   const handleGoToDetail = (posterId: NumericalQueryParam) => {
-    history.push(`/posters/${posterId}`);
+    history.push(`/posters/${posterId}?query=${query}`);
   }
 
   /**
@@ -115,17 +119,10 @@ const PostersResultsPage: React.FC = () => {
    * @param posterId poster id
    */
   const fetchPosterDetail = (posterId: NumericalQueryParam) => {
-    return new Promise((resolve, reject) => {
-      setIsLoading(true);
-      axios.get(`${POSTERS_API_DETAIL_URL}/${posterId}`)
-        .then((response: AxiosResponse<SinglePosterResponseData>) => {
-          setSelectedPosterInfo(response.data);
-          setIsLoading(false);
-          resolve();
-        }).catch(() => {
-          reject('Something went terribly wrong');
-        })
-    })    
+    axios.get(`${POSTERS_API_DETAIL_URL}/${posterId}`)
+      .then((response: AxiosResponse<SinglePosterResponseData>) => {
+        setSelectedPosterInfo(response.data);
+      }); 
   }
 
   /**
@@ -173,16 +170,14 @@ const PostersResultsPage: React.FC = () => {
 
       <Switch>
         <Route path={`${path}/:posterId`}>
-          {isLoading ? (
-            <CenteredComponent>
-              <CircularProgress />
-            </CenteredComponent>
-          ) : (
-            <PostersResultsDetail handleFetchPosterDetail={fetchPosterDetail} posterInfo={selectedPosterInfo}/>
-          )}
+          <PostersResultsDetail 
+            handleFetchPosterDetail={fetchPosterDetail} 
+            posterInfo={selectedPosterInfo}
+          />
         </Route>
         <Route exact path={path}>
           <PostersResultsList
+            query={query}
             posterCount={posterCount}
             posters={posters} 
             events={events} 

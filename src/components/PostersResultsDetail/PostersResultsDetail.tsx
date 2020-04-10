@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 
 interface Props {
   posterInfo?: SinglePosterResponseData;
-  handleFetchPosterDetail: (posterId: NumericalQueryParam) => Promise<any>;
+  handleFetchPosterDetail: Function;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -30,15 +30,18 @@ const useStyles = makeStyles((theme) => ({
 const PostersResultsDetail: React.FC<Props> = ({ posterInfo, handleFetchPosterDetail }) => {
   const classes = useStyles();
   const { posterId } = useParams();
-  let [isLoading, setIsLoading] = useState(false);
+  let [isLoading, setIsLoading] = useState(true);
 
   const poster = posterInfo?.poster;
   const event = posterInfo?.event;
   const authors = posterInfo?.users;
 
   useEffect(() => {
-    setIsLoading(true)
-    handleFetchPosterDetail(posterId);
+    const runEffect = async () => {
+      await handleFetchPosterDetail(posterId);
+    }
+    runEffect();
+    setIsLoading(false);
   }, [])
 
   const authorNames = () => authors?.map(author => author?.full_name).join('');

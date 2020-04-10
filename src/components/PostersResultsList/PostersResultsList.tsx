@@ -17,6 +17,7 @@ import CenteredComponent from '../CenteredComponent/CenteredComponent';
 
 
 interface Props {
+  query: string;
   posterCount: number;
   posters: MorressierPoster[];
   events: MorressierEvent[];
@@ -79,19 +80,19 @@ function useQuery() {
  * List of Posters painted in a Grid layout.
  */
 const PostersResultsList: React.FC<Props> = ({
+  query,
   posterCount,
   posters, 
   events, 
   handleGoToDetail, 
   handleFetchPosters, 
   handleNext,
-  handlePrevious 
+  handlePrevious
 }) => {
   const classes = useStyles();
   let queryParams = useQuery();
   let [isLoading, setIsLoading] = useState(false);
 
-  const query = queryParams.get('query') || "";
   const offset = queryParams.get('offset') || 0;
   const limit = queryParams.get('limit') || 6;
 
@@ -129,34 +130,42 @@ const PostersResultsList: React.FC<Props> = ({
       ) : (
       <Container className={classes.heroContent} maxWidth="md">
         <Grid container spacing={4}>
-          {posters.map((poster: MorressierPoster) => {
-            return (
-              <Grid item key={poster.id} xs={12} sm={6} md={4}>
-                <Card className={classes.card}>
-                  <CardMedia
-                    className={classes.cardMedia}
-                    image={poster.thumb_url}
-                    title={`${poster.title.substr(0, 20)}...`}
-                  />
-                  <CardContent className={classes.cardContent}>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      {poster.title}
-                    </Typography>
-                    <Typography component={'span'}>
-                      <p><strong>author:</strong> {poster.author_names.join(' & ')}</p>
-                      <p><strong>keywords:</strong> {poster.keywords?.join(', ')}</p>
-                      <p><strong>event name:</strong> {findEventName(poster.event) }</p>
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button size="small" color="primary" onClick={(e) => goToDetail(poster.id, findEventName(poster.event))}>
-                      View
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            )
-          })}
+          {
+          posters.length === 0 ? (
+              <CenteredComponent>
+                <h3>No posters were found.</h3>
+              </CenteredComponent> 
+            ) : (
+            posters.map((poster: MorressierPoster) => {
+              return (
+                <Grid item key={poster.id} xs={12} sm={6} md={4}>
+                  <Card className={classes.card}>
+                    <CardMedia
+                      className={classes.cardMedia}
+                      image={poster.thumb_url}
+                      title={`${poster.title.substr(0, 20)}...`}
+                    />
+                    <CardContent className={classes.cardContent}>
+                      <Typography gutterBottom variant="h5" component="h2">
+                        {poster.title}
+                      </Typography>
+                      <Typography component={'span'}>
+                        <p><strong>author:</strong> {poster.author_names.join(' & ')}</p>
+                        <p><strong>keywords:</strong> {poster.keywords?.join(', ')}</p>
+                        <p><strong>event name:</strong> {findEventName(poster.event) }</p>
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button size="small" color="primary" onClick={(e) => goToDetail(poster.id, findEventName(poster.event))}>
+                        View
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              )
+            })
+          )
+          }
         <CenteredComponent>
         <footer className={classes.footer}>
           <Typography variant="h6" align="center" gutterBottom>
